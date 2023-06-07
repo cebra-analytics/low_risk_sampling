@@ -170,6 +170,7 @@ prob_correct_colour <- function(new_N, rate, threshold1, threshold2,prior_N,prio
 # we can chose either dist_type = "normal" or dist_type = "binom". The "binom"  
 # method is slower and produces un-smooth plots, due to its discrete nature
 recommended_sample_size <- function(threshold1, threshold2, prior_N, prior_y, rel_tol,dist_type="normal"){
+  
   if (threshold1 > threshold2) {
     stop("T1>T2, hence the prior is already 'red'")
   }
@@ -232,7 +233,14 @@ recommended_sample_size <- function(threshold1, threshold2, prior_N, prior_y, re
   
   N_lb = max(0,start_N - start_N_increment)
   N_ub = N_lb + start_N_increment
-  return(optimise(function (x) (m_expected_probability_of_right_colour(x)-.95)^2,interval =c(N_lb, N_ub)))
+  
+  result<-optimise(function (x) (m_expected_probability_of_right_colour(x)-.95)^2,interval =c(N_lb, N_ub))
+  if(abs(result$minimum - 499.9999)<0.0001){
+    stop("T1 and T2 too close to calculate properly or some other nonlinearity")
+  }
+  
+  
+  return(result)
 }
 
 

@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# method_figures.R
+# plots_method.R
 #
 # Thao P. Le, Thomas K. Waring, Chris M. Baker
 #
@@ -83,6 +83,163 @@ ggplot(data = data_N, mapping = aes(x=past_leakage,group=T_risk)) +
   geom_line(aes(y=mid_samples,color=T_risk)) +
   labs(x='Past leakage',y='Minimum recommended next sample size') + theme(legend.position = "none")
 ggsave(paste0(plot_name, prior_N, '_ranges2.png'), width = 4, height = 6)
+
+
+##############################################################################
+# This code plots Figure... [for choosing prior sample sizes]
+##############################################################################
+
+threshold2= 0.01
+threshold1_at_prior_level= 0.95
+rel_tol = 0.001
+
+########################################################
+
+full_N_list <- seq(100,2000,100)
+sample_leakage_rate_list <- seq(0.001,0.005,0.001)
+
+for(leakage_rate in sample_leakage_rate_list){
+  N_reduced_seq <-c()
+  for(N in full_N_list){
+    t1<- calc_threshold_1(threshold1_at_prior_level,0.5 + N*leakage_rate, 0.5 + N - N*leakage_rate)
+    if (t1<threshold2){
+      N_reduced_seq <-seq(N,2000,100)
+      break
+    }
+  }
+  print(N_reduced_seq)
+  
+  get_N <- function(threshold1_at_prior_level,x,leakage_rate,threshold2,rel_tol){
+    prior_N <- x
+    prior_y <- x*leakage_rate
+    t1 <- calc_threshold_1(threshold1_at_prior_level,0.5 +prior_y , 0.5 + prior_N - prior_y )
+    
+    prev_result <- DF  %>% filter(prior_samples == prior_N, past_leakage == prior_y, abs(T1_level_percent - threshold1_at_prior_level*100)<0.00001, abs(T2_percent- threshold2*100)< 0.0000001)
+    if (nrow(prev_result) == 0) {
+      # print(paste0("prior samples = ", prior_N, ", past leakage = ",prior_y,", T1_level_percent = ",t1_prior_level*100,", T2_percent = ",t2*100))
+      print(paste0("Calculating new result: prior_y = ", prior_y, ", N = ", prior_N, ", t1 level = ",threshold1_at_prior_level, ", t2 = ", threshold2))
+      opt_samples <- tryCatch(
+        recommended_sample_size (t1, threshold2, prior_N, prior_y, rel_tol, dist_type="normal")$minimum, 
+        error = function(e){
+          found_result = FALSE
+        })
+    } else {
+      opt_samples <- prev_result$optimal_samples
+    }
+    
+    if(opt_samples>0){
+      return(opt_samples)
+    }
+    else{
+      return(NA)
+    }
+    
+  }
+  
+  optimal_samples <- sapply(N_reduced_seq,function(x) get_N(threshold1_at_prior_level,x,leakage_rate,threshold2,rel_tol))
+  
+  print(N_reduced_seq)
+  print(unlist(optimal_samples))
+  
+  dftemp <- data.frame(x =N_reduced_seq,y=unlist(optimal_samples))
+  dftemp <- na.omit(dftemp)
+  
+  if(leakage_rate==sample_leakage_rate_list[1]){
+    df_combined <- dftemp %>%  mutate(sample_leakage = leakage_rate)
+  } else {
+    df_combined<- df_combined %>%
+      bind_rows(dftemp %>%  mutate(sample_leakage = leakage_rate))
+  }
+  
+}
+
+
+save(df_combined, file=paste0("outputs/df_combined_new_N_given_different_prior_sample_size.RData"))
+
+load("outputs/df_combined_new_N_given_different_prior_sample_size.RData")
+
+df_combined$sample_leakage <- sapply(df_combined$sample_leakage, function(x){paste0(x*100,"%")})
+ggplot(df_combined,aes(x = x,y =y,color = sample_leakage)) +
+  geom_line(size=0.9) +
+  labs(x='Prior sample size',y='Minimum recommended next sample size',color="past leakage") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+ggsave(paste0('outputs/optimal_samples_different_sample_leakage_rates_',threshold1_at_prior_level,"_t2_",threshold2,'_normal.png'),width = 6, height = 4)
+
+
+#########################################
+
+
+threshold2 = 0.01
+threshold1_at_prior_level=0.95
+rel_tol=0.0001
+
+
+get_N <- function(threshold1_at_prior_level,N,y,threshold2,rel_tol){
+  prior_N <- N
+  prior_y <- y
+  t1 <- calc_threshold_1(threshold1_at_prior_level,0.5 +prior_y , 0.5 + prior_N - prior_y )
+  
+  prev_result <- DF  %>% filter(prior_samples == prior_N, past_leakage == prior_y, abs(T1_level_percent - threshold1_at_prior_level*100)<0.00001, abs(T2_percent- threshold2*100)< 0.0000001)
+  if (nrow(prev_result) == 0) {
+    # print(paste0("prior samples = ", prior_N, ", past leakage = ",prior_y,", T1_level_percent = ",t1_prior_level*100,", T2_percent = ",t2*100))
+    print(paste0("Calculating new result: prior_y = ", prior_y, ", N = ", prior_N, ", t1 level = ",threshold1_at_prior_level, ", t2 = ", threshold2))
+    opt_samples <- tryCatch(
+      recommended_sample_size (t1, threshold2, prior_N, prior_y, rel_tol, dist_type="normal")$minimum, 
+      error = function(e){
+        found_result = FALSE
+      })
+  } else {
+    opt_samples <- prev_result$optimal_samples
+  }
+  
+  if(opt_samples>0){
+    return(opt_samples)
+  }
+  else{
+    return(NA)
+  }
+}
+
+prior_y = 0
+prior_N_list = seq(200,2000,100)
+optimal_samples_0 <- sapply(prior_N_list,function(x) get_N(threshold1_at_prior_level,x,prior_y,threshold2,rel_tol))
+
+
+prior_y = 1
+prior_N_list_2 = seq(400,2000,100)
+optimal_samples_1 <- sapply(prior_N_list_2,function(x) get_N(threshold1_at_prior_level,x,prior_y,threshold2,rel_tol))
+
+df1 <- data.frame(x =prior_N_list,y=optimal_samples_0)
+df1 <- na.omit(df1)
+df2 <- data.frame(x =prior_N_list_2,y=optimal_samples_1)
+df2 <- na.omit(df2)
+
+df3 <- df1 %>%  mutate(past_leakage = 'zero leakage') %>%
+  bind_rows(df2 %>%
+              mutate(past_leakage = 'one leakage'))
+
+
+ggplot(df3,aes(y =y,x = x,color = past_leakage)) + 
+  geom_line(size=0.9) +
+  labs(x='Prior sample size',y='Minimum recommended next sample size',color="past leakage") + 
+  #ggtitle(paste0("Optimal sample size given different prior samples"))+
+  theme(plot.title = element_text(hjust = 0.5))  +
+  scale_color_manual(values = c("zero leakage"="dodgerblue","one leakage"="chartreuse4"))+
+  theme(legend.position = c(0.87, 0.35))
+
+ggsave(paste0('outputs/optimal_samples_with_zero_or_one_past_leakages_',threshold1_at_prior_level,"_t2_",threshold2,'_normal.png'),
+       width = 6, height = 4)
+
+
+
+
+
+
+
+
+
+
 
 
 
