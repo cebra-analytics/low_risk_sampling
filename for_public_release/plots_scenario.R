@@ -264,7 +264,7 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
   # colour_key = c("green"="green3", "orange"="darkorange", "red"="red2")
   
   
-  sim_df['leakage_proportion'] <- 100*500* sim_df['y_t'] / sim_df['N_t']
+  
   colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
   
   axis_colour = "chartreuse3"
@@ -273,13 +273,17 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
   max_sampling = max(sim_df['N_t'])
   x_lim_max = max(c(2000,max_sampling))
   
+  factor <- x_lim_max/5
+  
+  sim_df['leakage_proportion'] <- 100*factor* sim_df['y_t'] / sim_df['N_t']
+  
   ggplot(data =sim_df) +
     geom_bar(aes(x=quarter_nums, y=N_t, fill=colour_t),stat='identity') +
     scale_fill_manual(values = colour_key, name='Colour status') +
     geom_line(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),stat="identity",color="black",size=1.5)+
     geom_point(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),shape=21, color="black", fill="#69b3a2", size=3)+
     xlab('Quarters') + ylab('Number of samples') + 
-    scale_y_continuous(sec.axis=sec_axis(~./500,name="Proportion of leakages (%)",labels = function(x) paste0(x, "%")),limits=c(0,x_lim_max))+
+    scale_y_continuous(sec.axis=sec_axis(~./factor,name="Proportion of leakages (%)",labels = function(x) paste0(x, "%")),limits=c(0,x_lim_max))+
     ggtitle(paste0("Simulation: ", name, " with ", fluid_or_fixed , " sampling"))+
     theme( legend.position=c(.15,.8))
   
@@ -304,7 +308,7 @@ num_quarters<- 12
 low_rate <- 0.0012
 high_rate <- 0.02
 threshold1_at_prior_level <- 0.95
-threshold2<-0.01
+threshold2<-0.005
 
 pathway_name<-"Scenario_10k_6"
 
