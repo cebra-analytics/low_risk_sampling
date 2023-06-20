@@ -18,6 +18,9 @@ colour_status_fixed <- function(leakage){
   if(leakage==0){
     return("green")
   }
+  else if(leakage==1){
+    return("orange")
+  }
   else{
     return("red")
   }
@@ -93,6 +96,43 @@ simulate_quarters_fixed <- function(num_quarters,rates, sample_size=600,verbose=
   
 }
 
+# same as the one in plots_scenario.R
+plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="prior_quarters_fixed_sampling",fluid_or_fixed="fixed") {
+  sim_df['leakage_proportion'] <- 100* sim_df['y_t'] / sim_df['N_t']
+  
+  print(name)
+  print(sim_df)
+  
+  # colour_key = c("green"="green3", "orange"="darkorange", "red"="red2")
+  
+  
+  
+  colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
+  
+  axis_colour = "chartreuse3"
+  axis_colour = "green4"
+  
+  max_sampling = max(sim_df['N_t'])
+  x_lim_max = max(c(2000,max_sampling))
+  
+  factor <- x_lim_max/5
+  
+  sim_df['leakage_proportion'] <- 100*factor* sim_df['y_t'] / sim_df['N_t']
+  
+  ggplot(data =sim_df) +
+    geom_bar(aes(x=quarter_nums, y=N_t, fill=colour_t),stat='identity') +
+    scale_fill_manual(values = colour_key, name='Colour status') +
+    geom_line(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),stat="identity",color="black",size=1.5)+
+    geom_point(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),shape=21, color="black", fill="#69b3a2", size=3)+
+    xlab('Quarters') + ylab('Number of samples') + 
+    scale_y_continuous(sec.axis=sec_axis(~./factor,name="Proportion of leakages (%)",labels = function(x) paste0(x, "%")),limits=c(0,x_lim_max))+
+    ggtitle(paste0("Simulation: ", name, " with ", fluid_or_fixed , " sampling"))+
+    theme( legend.position=c(.15,.8))
+  
+  ggsave(paste0("outputs/",pathway_name,"_",name,"_",additional_save_name, "_combined.png"),width = 6, height = 4)
+  
+  
+}
 
 
 ################################################################################
@@ -117,7 +157,7 @@ num_routine <- 4
 highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_routine)) 
 
 
-############################### fluid sampling
+############################### sampling
 
 sampling_method = list("fixed")
 additional_save_name <- paste0("prior_",take_previous_method[[1]],"_",sampling_method[[1]])
@@ -131,9 +171,13 @@ simulation_red <- simulate_quarters_fixed(num_quarters,highrisk_rates,sample_siz
 plot_sim(simulation_red,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 
 
+### more sampling with a lower risk above the low-risk threshold
 
-
-
+high_rate <- 0.01
+highrisk_save_name<- paste0(pathway_name,"-",sample_size,"_", high_rate, "_")
+highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_routine)) 
+simulation_red <- simulate_quarters_fixed(num_quarters,highrisk_rates,sample_size)
+plot_sim(simulation_red,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 
 
 
