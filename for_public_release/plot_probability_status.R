@@ -37,6 +37,9 @@ colour_status <- function(threshold1, threshold2, a,b){
 }
 
 
+
+
+
 get_fluid_N <- function(N_prior, y_prior,threshold1_at_prior_level,threshold2,rel_tol = 0.0001){
   prev_result <- prev_csv  %>% filter(prior_samples == N_prior, past_leakage == y_prior, abs(T1_level_percent - threshold1_at_prior_level*100)<0.00001, abs(T2_percent - threshold2*100)<0.000001)
   if (nrow(prev_result) == 0) {
@@ -56,6 +59,29 @@ get_fluid_N <- function(N_prior, y_prior,threshold1_at_prior_level,threshold2,re
 }
 
 ##############################################################################
+# TK look here !!!!!!!!!
+
+
+# find y value so that posterior rate is 95% above threshold
+find_y_cutoff <- function (threshold, a0, b0, N1) {
+  sq_residual <- function (y1) {
+    (pbeta (threshold, a0 + y1, b0 + N1 - y1) - 0.95)^2
+  }
+  result <- optimize (sq_residual, interval=c(0,100))
+  return (result$minimum)
+}
+
+# find probabilities of colour
+colour_probs <- function (t1, t2, a0, b0, N1, rate) {
+  y_orange <- find_y_cutoff (t1, a0, b0, N1)
+  y_red <- find_y_cutoff (t2, a0, b0, N1)
+
+  pr_green <- pbinom(y_orange, size=N1, prob=rate)
+  pr_orange <- pbinom(y_red, size=N1, prob=rate) - pr_green
+  pr_red = 1 - pr_green - pr_orange
+
+  return(c('green'=pr_green, 'orange'=pr_orange, 'red'=pr_red))
+}
 
 prior_N <- 10000
 prior_y <- 6
@@ -83,23 +109,27 @@ value <- rep(0,length(true_rate_list))
 colour_status_results <- data.frame(true_rate_list,colour,value)
 
 for( rate in true_rate){
-  for(i in seq(1,M_run_times,1)){
-    samples <- rbernoulli(N, rate)
+
+  prs <- colour_probs (threshold1, threshold2, alpha, beta, N, rate)
+  colour_status_results$value[colour_status_results$true_rate_list==rate] <- prs
+
+  # for(i in seq(1,M_run_times,1)){
+  #   samples <- rbernoulli(N, rate)
     
-    y <- sum(samples)
+  #   y <- sum(samples)
     
-    print(y)
+  #   print(y)
     
     
-    a <- 0.5 + prior_y + y
-    b <- 0.5 + prior_N + N - prior_y - y
+  #   a <- 0.5 + prior_y + y
+  #   b <- 0.5 + prior_N + N - prior_y - y
     
-    colour <- colour_status(threshold1, threshold2, a,b)
+  #   colour <- colour_status(threshold1, threshold2, a,b)
     
-    print(colour)
-    colour_status_results$value[colour_status_results$true_rate_list==rate & colour_status_results$colour==colour] <- colour_status_results$value[colour_status_results$true_rate_list==rate & colour_status_results$colour==colour]+1
+  #   print(colour)
+  #   colour_status_results$value[colour_status_results$true_rate_list==rate & colour_status_results$colour==colour] <- colour_status_results$value[colour_status_results$true_rate_list==rate & colour_status_results$colour==colour]+1
     
-  }
+  # }
 }
 
 colour_status_results
@@ -118,7 +148,7 @@ ggplot(colour_status_results, aes(fill=colour, y=value, x=true_rate_list)) +
   xlab('True rate') + ylab('Probability of colour status')
 
 
-ggsave(paste0("outputs/plot_probability_status_100_0.05.png"),width = 12, height = 4)
+ggsave(paste0("outputs/plot_probability_status_new.png"),width = 12, height = 4)
 
 
 ################################################################################
