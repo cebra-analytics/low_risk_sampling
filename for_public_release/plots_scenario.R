@@ -263,31 +263,41 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
   
   # colour_key = c("green"="green3", "orange"="darkorange", "red"="red2")
   
+  # colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
+  
+  colour_key = c("green"="darkolivegreen2", "orange"="chocolate1", "red"="orangered3")
+  
+  # colour_key = c("green"="darkolivegreen2", "orange"="darkorange1", "red"="orangered3")
+  
+  colour_key = c("green"="#cff983", "orange"="#ff9448", "red"="#C70039")
+  
+  colour_key_border = c("green"="green3", "orange"="darkorange", "red"="red2")
   
   
-  colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
-  
-  axis_colour = "chartreuse3"
-  axis_colour = "green4"
   
   max_sampling = max(sim_df['N_t'])
-  x_lim_max = max(c(2000,max_sampling))
+  x_lim_max = max(c(3000,max_sampling))
   
-  factor <- x_lim_max/5
+  factor <- x_lim_max/4
   
   sim_df['leakage_proportion'] <- 100*factor* sim_df['y_t'] / sim_df['N_t']
   
   ggplot(data =sim_df) +
-    geom_bar(aes(x=quarter_nums, y=N_t, fill=colour_t),stat='identity') +
-    scale_fill_manual(values = colour_key, name='Colour status') +
+    geom_bar(aes(x=quarter_nums, y=N_t, fill=colour_t,color = colour_t),stat='identity') +
+    scale_fill_manual(values = colour_key, name='Status') +
+    scale_color_manual(values = colour_key_border, name='Status') +
     geom_line(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),stat="identity",color="black",size=1.5)+
     geom_point(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),shape=21, color="black", fill="#69b3a2", size=3)+
     xlab('Quarters') + ylab('Number of samples') + 
     scale_y_continuous(sec.axis=sec_axis(~./factor,name="Proportion of leakages (%)",labels = function(x) paste0(x, "%")),limits=c(0,x_lim_max))+
-    ggtitle(paste0("Simulation: ", name, " with ", fluid_or_fixed , " sampling"))+
-    theme( legend.position=c(.15,.8))
+    # ggtitle(paste0("Simulation: ", name, " with ", fluid_or_fixed , " sampling"))+
+    #theme( legend.position=c(0,0))+
+    theme_light()+
+    theme( legend.position=c(0.24,0.83),legend.background = element_rect(fill = "white", color = "grey"),text = element_text(size = 17))
   
-  ggsave(paste0("outputs/",pathway_name,"_",name,"_",additional_save_name, "_combined.png"),width = 6, height = 4)
+  print(paste0("outputs/",pathway_name,"_",name,"_",additional_save_name, "_combined.png"))
+  
+  ggsave(paste0("outputs/",pathway_name,"_",name,"_",additional_save_name, "_combined.png"),width = 4, height = 4)
   
   
 }
@@ -304,7 +314,7 @@ N_prior_list <- c(5000,5000)
 y_prior_list <- c(3,3)
 
 
-num_quarters<- 12
+num_quarters<- 5
 low_rate <- 0.0012
 high_rate <- 0.02
 threshold1_at_prior_level <- 0.95
@@ -317,11 +327,15 @@ take_previous_method <- list("quarters", 2)
 routine_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", low_rate, "_")
 highrisk_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", high_rate, "_")
 
+
 routine_rates <- rep(low_rate, num_quarters)
 
 num_routine <- 4
 highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_routine)) 
 
+very_low_rate <- 0.0001
+very_low_rates <- rep(very_low_rate,num_quarters)
+very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
 
 ############################### fluid sampling
 print("=========== fluid sampling ============")
@@ -330,9 +344,18 @@ sampling_method = list("fluid")
 additional_save_name <- paste0("prior_",take_previous_method[[1]],"_",sampling_method[[1]])
 
 simulation_routine <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,routine_rates,threshold1_at_prior_level, threshold2, take_previous_method , sampling_method)
-plot_sim(simulation_routine,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 
 simulation_red <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,highrisk_rates,threshold1_at_prior_level, threshold2, take_previous_method , sampling_method)
+
+simulation_routine_low <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,very_low_rates,threshold1_at_prior_level, threshold2, take_previous_method , sampling_method)
+
+
+save(simulation_routine, simulation_red, simulation_routine_low, file = "outputs/plots_scenario_saved_outputs.rdata")
+load("outputs/plots_scenario_saved_outputs.rdata")
+
+plot_sim(simulation_routine,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 plot_sim(simulation_red,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
+plot_sim(simulation_routine_low,"very_low_risk",very_low_save_name,additional_save_name,sampling_method[[1]])
+
 
 
