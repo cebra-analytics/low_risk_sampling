@@ -21,7 +21,7 @@ DF <- tryCatch(read.csv(data_name), error = function(e){
 
 
 ##############################################################################
-# This code plots Figure...
+# This code plots Figure 3 a
 ##############################################################################
 
 
@@ -36,12 +36,14 @@ plot_data$T2_percent <- sapply(plot_data$T2_percent, function(x){paste0(x,"%")})
 
 ggplot(data =plot_data, mapping = aes(x=past_leakage, y=optimal_samples,group=T2_percent,)) + geom_line(aes(colour=T2_percent)) +
   labs(x='Past leakage',y='Minimum recommended next sample size',color=expression('T'["risk"]))  +
-  theme(legend.position = c(0.2, 0.75))
-ggsave(paste0(plot_name, prior_N, '.png'), width = 4, height =6)
+ #scale_y_continuous(expand=c(0,0)) + 
+  theme_light()+
+  theme(legend.position = c(0.2, 0.72),legend.background = element_rect(fill = "white", color = "grey"),text = element_text(size = 13)) 
+ggsave(paste0(plot_name, prior_N, '.png'), width = 4, height =5)
 
 
 ##############################################################################
-# Other figure....
+# This plots Figure 3 b
 ##############################################################################
 
 min_samples = DF %>% filter(T1_level_percent == 94)
@@ -81,12 +83,15 @@ data_N$T_risk <- sapply(data_N$T_risk, function(x){paste0(x,"%")})
 ggplot(data = data_N, mapping = aes(x=past_leakage,group=T_risk)) +
   geom_ribbon(aes(ymin=min_samples,ymax=max_samples,fill=T_risk),alpha=0.4) +
   geom_line(aes(y=mid_samples,color=T_risk)) +
-  labs(x='Past leakage',y='Minimum recommended next sample size') + theme(legend.position = "none")
-ggsave(paste0(plot_name, prior_N, '_ranges2.png'), width = 4, height = 6)
+  labs(x='Past leakage',y='Minimum recommended next sample size') + 
+  theme_light()+
+  theme(legend.position = "none",text = element_text(size = 13))
+ggsave(paste0(plot_name, prior_N, '_ranges2.png'), width = 4, height = 5)
+
 
 
 ##############################################################################
-# This code plots Figure... [for choosing prior sample sizes]
+# This code plots Figure 8 (b)
 ##############################################################################
 
 threshold2= 0.01
@@ -162,7 +167,8 @@ df_combined$sample_leakage <- sapply(df_combined$sample_leakage, function(x){pas
 ggplot(df_combined,aes(x = x,y =y,color = sample_leakage)) +
   geom_line(size=0.9) +
   labs(x='Prior sample size',y='Minimum recommended next sample size',color="past leakage") +
-  theme(plot.title = element_text(hjust = 0.5)) 
+  theme_light()+
+  theme(plot.title = element_text(hjust = 0.5),legend.position = c(0.12, 0.75),legend.background = element_rect(fill = "white", color = "grey"),text = element_text(size = 13)) 
 
 ggsave(paste0('outputs/optimal_samples_different_sample_leakage_rates_',threshold1_at_prior_level,"_t2_",threshold2,'_normal.png'),width = 6, height = 4)
 
@@ -225,8 +231,9 @@ ggplot(df3,aes(y =y,x = x,color = past_leakage)) +
   labs(x='Prior sample size',y='Minimum recommended next sample size',color="past leakage") + 
   #ggtitle(paste0("Optimal sample size given different prior samples"))+
   theme(plot.title = element_text(hjust = 0.5))  +
-  scale_color_manual(values = c("zero leakage"="dodgerblue","one leakage"="chartreuse4"))+
-  theme(legend.position = c(0.87, 0.35))
+  scale_color_manual(values = c("zero leakage"="#152996","one leakage"="#ff8974"))+
+  theme_light()+
+  theme(plot.title = element_text(hjust = 0.5),legend.position = c(0.37, 0.8),legend.background = element_rect(fill = "white", color = "grey"),text = element_text(size = 13)) 
 
 ggsave(paste0('outputs/optimal_samples_with_zero_or_one_past_leakages_',threshold1_at_prior_level,"_t2_",threshold2,'_normal.png'),
        width = 6, height = 4)

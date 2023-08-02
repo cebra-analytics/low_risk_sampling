@@ -59,7 +59,7 @@ get_fluid_N <- function(N_prior, y_prior,threshold1_at_prior_level,threshold2,re
 }
 
 ##############################################################################
-# TK look here !!!!!!!!!
+# RUN THIS
 
 
 # find y value so that posterior rate is 95% above threshold
@@ -96,7 +96,7 @@ N <- get_fluid_N(prior_N, prior_y,threshold1_at_prior_level,threshold2 )
 print(N)
 
 
-true_rate <- seq(0.0055, 0.05,0.0005)
+true_rate <- seq(0.00, 0.05,0.0005)
 length(true_rate)
 
 M_run_times = 100
@@ -136,7 +136,7 @@ colour_status_results
 
 # gather results and plot a stacked bar graph.
 colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
-
+colour_key = c("green"="#cff983", "orange"="#ff9448", "red"="#C70039")
 # ggplot(colour_status_results, aes(fill=colour, y=value, x=true_rate_list)) + 
 #   geom_bar(position="fill", stat="identity")+
 #   scale_fill_manual(values = colour_key, name='Colour status') +
@@ -145,10 +145,14 @@ colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
 ggplot(colour_status_results, aes(fill=colour, y=value, x=true_rate_list)) + 
   geom_area()+
   scale_fill_manual(values = colour_key, name='Colour status') +
-  xlab('True rate') + ylab('Probability of colour status')
+  xlab('True rate') + ylab('Probability of colour status') +
+  theme_light()+
+  theme(text = element_text(size = 17))  + geom_vline(xintercept = threshold2) +
+  # xlim(0.00, 0.05)+
+  scale_x_continuous(expand=c(0,0),labels = scales::percent)+scale_y_continuous(expand=c(0,0))
 
 
-ggsave(paste0("outputs/plot_probability_status_new.png"),width = 12, height = 4)
+ggsave(paste0("outputs/plot_probability_status_new.png"),width = 10, height = 4)
 
 
 ################################################################################
