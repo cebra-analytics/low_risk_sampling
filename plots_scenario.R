@@ -6,7 +6,7 @@
 #
 # 2023
 # 
-#  
+# Plots scenarios using our sampling method (Figures 4, 5, 6)
 # 
 ##############################################################################
 library(tidyverse)
@@ -45,15 +45,13 @@ simulate_quarters <- function(N_prior_list,y_prior_list,num_quarters,rates,thres
   y_t <- rep(c(NA),pre_quarters+num_quarters)
   
   for(i in seq(1,length(N_prior_list))){
-    # first add in the prior samples (a shame we can't have negative indexing in the past-history kind of way!)
+    # first add in the prior samples
     N_t[i]<-N_prior_list[i]
     y_t[i]<-y_prior_list[i]
   }
   
   all_samples <- c()
   # generate fake samples that could correspond to the prior data
-  # if we use the real prior data, those actually do have a date, 
-  # though...too much of a bother, probably won't make much of a different
   for(i in seq(1,length(N_prior_list))){
     correct_number_of_simulated_prior_leakages = FALSE
     while(!correct_number_of_simulated_prior_leakages){
@@ -261,14 +259,6 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
   print(name)
   print(sim_df)
   
-  # colour_key = c("green"="green3", "orange"="darkorange", "red"="red2")
-  
-  # colour_key = c("green"="chartreuse3", "orange"="orange", "red"="brown1")
-  
-  colour_key = c("green"="darkolivegreen2", "orange"="chocolate1", "red"="orangered3")
-  
-  # colour_key = c("green"="darkolivegreen2", "orange"="darkorange1", "red"="orangered3")
-  
   colour_key = c("green"="#cff983", "orange"="#ff9448", "red"="#C70039")
   
   colour_key_border = c("green"="green3", "orange"="darkorange", "red"="red2")
@@ -290,8 +280,6 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
     geom_point(aes(x=as.numeric(quarter_nums), y=as.numeric(leakage_proportion)),shape=21, color="black", fill="#69b3a2", size=3)+
     xlab('Quarters') + ylab('Number of samples') + 
     scale_y_continuous(sec.axis=sec_axis(~./factor,name="Proportion of leakages (%)",labels = function(x) paste0(x, "%")),limits=c(0,x_lim_max))+
-    # ggtitle(paste0("Simulation: ", name, " with ", fluid_or_fixed , " sampling"))+
-    #theme( legend.position=c(0,0))+
     theme_light()+
     theme( legend.position=c(0.24,0.83),legend.background = element_rect(fill = "white", color = "grey"),text = element_text(size = 17))
   
@@ -304,8 +292,11 @@ plot_sim <- function (sim_df,name,pathway_name="pathway",additional_save_name="p
 
 
 ################################################################################
-# plotting
+# Plotting
 ################################################################################
+
+########## parameters #######################################
+
 
 prior_N <- 10000
 prior_y <- 6
@@ -337,8 +328,9 @@ very_low_rate <- 0.0001
 very_low_rates <- rep(very_low_rate,num_quarters)
 very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
 
-############################### fluid sampling
-print("=========== fluid sampling ============")
+
+########## sampling #######################################
+
 
 sampling_method = list("fluid")
 additional_save_name <- paste0("prior_",take_previous_method[[1]],"_",sampling_method[[1]])
@@ -351,11 +343,10 @@ simulation_routine_low <- simulate_quarters(N_prior_list,y_prior_list,num_quarte
 
 
 save(simulation_routine, simulation_red, simulation_routine_low, file = "outputs/plots_scenario_saved_outputs.rdata")
+
+
 load("outputs/plots_scenario_saved_outputs.rdata")
 
 plot_sim(simulation_routine,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 plot_sim(simulation_red,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 plot_sim(simulation_routine_low,"very_low_risk",very_low_save_name,additional_save_name,sampling_method[[1]])
-
-
-
