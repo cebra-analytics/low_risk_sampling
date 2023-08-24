@@ -1,11 +1,20 @@
-R implementation for [X_paper_X]
+# Adaptive sampling method to monitor “low-risk” pathways with limited surveillance resources
 
-Written by: Thao P. Le, Thomas K. Waring, and Christopher M. Baker.
+This repository contains the R implementation for the sampling method introduced in the paper *Adaptive sampling method to monitor “low-risk” pathways with limited surveillance resources*, by Thao P. Le, Thomas K. Waring, Howard Bondell, Andrew Robinson, and Christopher M. Baker.
 
-This code will generate Figures X in [paper]
+**Note**: some figures require the **allocate.r** function which is taken from [*Allocating surveillance resources to reduce ecological invasions: maximizing detections and information about the threat* by Andrew Robinson, Mark A. Burgman, Rob Cannon](https://doi.org/10.1890/10-0195.1)
+
+Aside from allocate.r, the code in this repository is written by Thao P. Le, Thomas K. Waring, and Christopher M. Baker.
 
 The code is in R, and requires packages: tidyverse,  tidyr, memoise, and Rmpfr.
 
-core_functions.R: contains all the functions needed to calculate the minimum recommended sample size
-
-plots_...R : plotting scripts to produce the non-diagramtic figures in the paper 
+| code file | description |
+| --------- | ---------- |
+|**allocate.r** | Robinson et al's sampling method from [*Allocating surveillance resources to reduce ecological invasions: maximizing detections and information about the threat*](https://doi.org/10.1890/10-0195.1) |
+|**core_functions.R** | contains functions needed to calculate the minimum recommended sample size for the low risk sampling method |
+|**generate_df.R** | calls core_functions.R to create a dataframe (and csv file) containing combinations of parameters and subsequent recommended sample size |
+| **plots_method.R** | plots figures 3 and 8 in the paper |
+| **plot_probability_status** | plots figure 7 in the paper |
+| **plots_scenario.R** | runs very low leakage, low leakage, and high leakage scenarios, sampled with our method (Figures 4(a), 5(a), 6(a)) |
+|**Robinson_2011_scenarios.r** | runs very low leakage, low leakage, and high leakage scenarios, sampled with Robinson et al's method (Figures 4(b), 5(b), 6(b)) | 
+| **fixed_600_scenario.R** | runs very low leakage, low leakage, and high leakage scenarios, sampled using a fixed 600 sample volume (Figures 4(c), 5(c), 6(c)) | 
