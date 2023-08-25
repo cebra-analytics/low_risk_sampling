@@ -71,6 +71,7 @@ norm_probabilites_above_T2_internal <- function(rate,threshold2,prior_N, prior_y
       bottom_probability_without_Bab <- log(integrateR(func_to_int_mpfr, lower =0, upper =-log(threshold2),rel.tol = rel_tol)$value)
       
       probability_mpfr <- exp(top_probability_without_Bab - bottom_probability_without_Bab)
+      
       return(asNumeric(probability_mpfr))
     }
   }
@@ -235,7 +236,7 @@ recommended_sample_size <- function(threshold1, threshold2, prior_N, prior_y, re
   N_ub = N_lb + start_N_increment
   
   result<-optimise(function (x) (m_expected_probability_of_right_colour(x)-.95)^2,interval =c(N_lb, N_ub))
-  if(abs(result$minimum - 499.9999)<0.0001){
+  if(abs(result$minimum - N_ub)<0.0001){
     stop("T1 and T2 too close to calculate properly or some other nonlinearity")
   }
   
