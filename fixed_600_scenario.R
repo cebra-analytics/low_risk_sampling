@@ -161,6 +161,11 @@ highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_rout
 very_low_rate <- 0.0001
 very_low_rates <- rep(very_low_rate,num_quarters)
 very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
+
+semi_high_rate <- 0.005
+slowly_rising_rates <- seq(low_rate,semi_high_rate,(semi_high_rate-low_rate)/(num_quarters-1))
+slowly_rising_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_slow", low_rate,'-',semi_high_rate , "_")
+
 ############################### sampling
 
 sampling_method = list("fixed")
@@ -171,16 +176,17 @@ additional_save_name <- paste0("prior_",take_previous_method[[1]],"_",sampling_m
 simulation_routine_600 <-simulate_quarters_fixed(num_quarters,routine_rates,sample_size)
 simulation_red_600 <- simulate_quarters_fixed(num_quarters,highrisk_rates,sample_size)
 simulation_routine_low_600 <-simulate_quarters_fixed(num_quarters,very_low_rates,sample_size)
+simulation_rising_600 <-simulate_quarters_fixed(num_quarters,slowly_rising_rates,sample_size)
 
 
-save(simulation_routine_600, simulation_red_600, simulation_routine_low_600, file = "outputs/fixed_600_scenario_saved_outputs.rdata")
+save(simulation_routine_600, simulation_red_600, simulation_routine_low_600,simulation_rising_600, file = "outputs/fixed_600_scenario_saved_outputs.rdata")
 load("outputs/fixed_600_scenario_saved_outputs.rdata")
 
 
 plot_sim_600(simulation_routine_600,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 plot_sim_600(simulation_red_600,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 plot_sim_600(simulation_routine_low_600,"very_low_risk",very_low_save_name,additional_save_name,sampling_method[[1]])
-
+plot_sim_600(simulation_rising_600,"slowly_rising",slowly_rising_save_name,additional_save_name,sampling_method[[1]])
 
 ### more sampling with a lower risk above the low-risk threshold
 
