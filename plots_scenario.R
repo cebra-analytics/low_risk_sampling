@@ -328,6 +328,10 @@ very_low_rate <- 0.0001
 very_low_rates <- rep(very_low_rate,num_quarters)
 very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
 
+semi_high_rate <- 0.005
+slowly_rising_rates <- seq(low_rate,semi_high_rate,(semi_high_rate-low_rate)/(num_quarters-1))
+slowly_rising_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_slow", low_rate,'-',semi_high_rate , "_")
+
 
 ########## sampling #######################################
 
@@ -341,8 +345,9 @@ simulation_red <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,highr
 
 simulation_routine_low <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,very_low_rates,threshold1_at_prior_level, threshold2, take_previous_method , sampling_method)
 
+simulation_routine_rising <- simulate_quarters(N_prior_list,y_prior_list,num_quarters,slowly_rising_rates,threshold1_at_prior_level, threshold2, take_previous_method , sampling_method)
 
-save(simulation_routine, simulation_red, simulation_routine_low, file = "outputs/plots_scenario_saved_outputs.rdata")
+save(simulation_routine, simulation_red, simulation_routine_low,simulation_routine_rising, file = "outputs/plots_scenario_saved_outputs.rdata")
 
 
 load("outputs/plots_scenario_saved_outputs.rdata")
@@ -350,3 +355,4 @@ load("outputs/plots_scenario_saved_outputs.rdata")
 plot_sim(simulation_routine,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 plot_sim(simulation_red,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 plot_sim(simulation_routine_low,"very_low_risk",very_low_save_name,additional_save_name,sampling_method[[1]])
+plot_sim(simulation_routine_rising,"slowly_rising",slowly_rising_save_name,additional_save_name,sampling_method[[1]])
