@@ -187,9 +187,7 @@ plot_sim_robinson <- function (sim_df,name,pathway_name="pathway",additional_sav
 
   print(name)
   print(sim_df)
-
-
-  sim_df['leakage_proportion'] <- 100*500* sim_df['y_t'] / sim_df['N_t']
+  
   colour_key = c("green"="#7d7d7d", "orange"="#7d7d7d", "red"="#7d7d7d")
   colour_key = c("green"="#88b9ec", "orange"="#88b9ec", "red"="#88b9ec")
   
@@ -197,6 +195,8 @@ plot_sim_robinson <- function (sim_df,name,pathway_name="pathway",additional_sav
   x_lim_max = max(c(3000,max_sampling))
   
   factor <- x_lim_max/4
+  
+  sim_df['leakage_proportion'] <- 100*factor* sim_df['y_t'] / sim_df['N_t']
 
   ggplot(data =sim_df) +
     geom_bar(aes(x=quarter_nums, y=N_t, fill=colour_t),stat='identity',show.legend = FALSE) +
@@ -248,6 +248,10 @@ very_low_rate <- 0.0001
 very_low_rates <- rep(very_low_rate,num_quarters)
 very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
 
+semi_high_rate <- 0.005
+slowly_rising_rates <- seq(low_rate,semi_high_rate,(semi_high_rate-low_rate)/(num_quarters-1))
+slowly_rising_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_slow", low_rate,'-',semi_high_rate , "_")
+
 ############################### fluid sampling
 print("=========== fluid sampling ============")
 
@@ -257,14 +261,16 @@ additional_save_name <- paste0("prior_",take_previous_method[[1]],"_",sampling_m
 simulation_routine_robinson <- simulate_quarters_robinson(N_prior_list,y_prior_list,num_quarters,routine_rates,sample_size_upper_limit,risk_cutoff,  take_previous_method )
 simulation_red_robinson <- simulate_quarters_robinson (N_prior_list,y_prior_list,num_quarters,highrisk_rates,sample_size_upper_limit,risk_cutoff, take_previous_method)
 simulation_routine_low_robinson <- simulate_quarters_robinson(N_prior_list,y_prior_list,num_quarters,very_low_rates,sample_size_upper_limit,risk_cutoff,  take_previous_method )
+simulation_routine_rising_robinson <- simulate_quarters_robinson(N_prior_list,y_prior_list,num_quarters,slowly_rising_rates,sample_size_upper_limit,risk_cutoff,  take_previous_method )
 
 
-
-save(simulation_routine_robinson, simulation_red_robinson, simulation_routine_low_robinson, file = "outputs/Robinson_2011_scenarios_saved_outputs.rdata")
+save(simulation_routine_robinson, simulation_red_robinson, simulation_routine_low_robinson,simulation_routine_rising_robinson, file = "outputs/Robinson_2011_scenarios_saved_outputs.rdata")
 
 load("outputs/Robinson_2011_scenarios_saved_outputs.rdata")
 
 plot_sim_robinson(simulation_routine_robinson,"routine",routine_save_name,additional_save_name,sampling_method[[1]])
 plot_sim_robinson(simulation_red_robinson,"risky",highrisk_save_name,additional_save_name,sampling_method[[1]])
 plot_sim_robinson(simulation_routine_low_robinson,"very_low_risk",very_low_save_name,additional_save_name,sampling_method[[1]])
+plot_sim_robinson(simulation_routine_rising_robinson,"slowly_rising",slowly_rising_save_name,additional_save_name,sampling_method[[1]])
+
 
