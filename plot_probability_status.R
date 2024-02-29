@@ -6,7 +6,7 @@
 #
 # 2023
 # 
-# Plots Figure 7 in the paper
+# Plots Figure 8 in the paper
 # 
 ##############################################################################
 library(tidyverse)
@@ -95,8 +95,6 @@ print(N)
 
 true_rate <- seq(0.00, 0.05,0.0005)
 length(true_rate)
-
-M_run_times = 100
 
 true_rate_list <- rep(true_rate, each=3)
 colour <- rep(c("green","orange","red"), length(true_rate))

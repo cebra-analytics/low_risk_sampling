@@ -322,8 +322,8 @@ highrisk_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",thres
 routine_rates <- rep(low_rate, num_quarters)
 
 num_routine <- 4
-highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_routine)) 
-
+highrisk_rates <-c(rep(low_rate,num_routine),rep(high_rate,num_quarters-num_routine)) git
+git
 very_low_rate <- 0.0001
 very_low_rates <- rep(very_low_rate,num_quarters)
 very_low_save_name<- paste0(pathway_name,"-",threshold1_at_prior_level,"-",threshold2 ,"_", very_low_rate, "_")
