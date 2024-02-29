@@ -17,4 +17,4 @@ The code is in R, and requires packages: tidyverse,  tidyr, memoise, and Rmpfr.
 | **plot_probability_status.R** | Plots figure 8 in the paper |
 | **plots_scenario.R** | Runs very low leakage, low leakage, and high leakage scenarios, sampled with our method (Figures 4(a), 5(a), 6(a), 7(a)) |
 |**Robinson_2011_scenarios.R** | Runs very low leakage, low leakage, and high leakage scenarios, sampled with Robinson et al's method (Figures 4(b), 5(b), 6(b), 7(b)) | 
-| **fixed_600_scenario.R** | Runs very low leakage, low leakage, and high leakage scenarios, sampled using a fixed 600 sample volume (Figures 4(c), 5(c), 6(c), 7(b)) | 
+| **fixed_600_scenario.R** | Runs very low leakage, low leakage, and high leakage scenarios, sampled using a fixed 600 sample volume (Figures 4(c), 5(c), 6(c), 7(c)) | 
